@@ -10,7 +10,7 @@ double bestv;//当前最大价值
 int j;//用于循环判断
 int IF(int i,int j);//用于判断多个约束条件同时成立
 double bound(int i);//剪枝函数
-void getBest(int i)
+void Backtrack(int i)
 {
     if(i>=n)//递归结束的判定条件，已经搜索到根节点
     {
@@ -24,7 +24,7 @@ void getBest(int i)
 				cw[j]+=w[j][i];
 			}
 			cv+=v[i];
-			getBest(i+1);
+			Backtrack(i+1);
 			for(j=0;j<m;j++)//释放时，也要同时释放m个约束的属性
 			{
 				cw[j]-=w[j][i];//此处回溯
@@ -33,7 +33,7 @@ void getBest(int i)
 		}
 		if(bound(i+1)>bestv)//用上界函数计算，如若符合条件则搜索右子树
 		{
-			getBest(i+1);
+			Backtrack(i+1);
 		}
 }
 //用于计算剩余物品的最高价值上界，功能为剪枝
@@ -89,6 +89,6 @@ void scanf()
 void main()
 { 
 	scanf();
-    getBest(0);
+    Backtrack(0);
     printf("最大价值为：%lf\n",bestv);
 }
