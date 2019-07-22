@@ -1,0 +1,94 @@
+#include<stdio.h>
+int c[1000];//约束条件
+int n;//物品数
+int m;//约束数
+int w[1000][1000]; //物品属性数组
+double v[100];//物品价值数组
+int cw[1000];//当前属性值数组
+double cv;//当前背包价值
+double bestv;//当前最大价值
+int j;//用于循环判断
+int IF(int i,int j);//用于判断多个约束条件同时成立
+double bound(int i);//剪枝函数
+void getBest(int i)
+{
+    if(i>=n)//递归结束的判定条件，已经搜索到根节点
+    {
+        if(cv>bestv)
+            bestv=cv;
+    }
+		else if(IF(i,0))//搜索左子树（放入这个物品）
+		{
+			for(j=0;j<m;j++)//放入后当前m个约束的属性值都要发生变化
+			{
+				cw[j]+=w[j][i];
+			}
+			cv+=v[i];
+			getBest(i+1);
+			for(j=0;j<m;j++)//释放时，也要同时释放m个约束的属性
+			{
+				cw[j]-=w[j][i];//此处回溯
+			}
+			cv-=v[i];
+		}
+		if(bound(i+1)>bestv)//用上界函数计算，如若符合条件则搜索右子树
+		{
+			getBest(i+1);
+		}
+}
+//用于计算剩余物品的最高价值上界，功能为剪枝
+double bound(int i)
+{   //判断当前背包的总价值+剩余容量可容纳的最大价值<=当前最优价值
+	 double leftw[100];//用于存放剩余属性值
+     for(j=0;j<m;j++)
+		 leftw[j]=c[j]-cw[j];//剩余属性值
+    double b = cv;//记录当前背包的总价值cv,最后求上界
+    //尽力装入剩余的物品
+    while((IF(i,0))&&i<n)
+    {
+        for(j=0;j<m;j++)
+		{
+			leftw[j]-=w[j][i];
+		}
+        b+=v[i];
+        i++;
+    }
+    //不能装时，此时并不能确保该物品之后就没有可选的了
+	//用下一个物品的单位属性价值折算到剩余空间为推测
+    if(i<n)
+		for(j=0;j<m;j++)
+        b+=(v[i]/w[j][i])*leftw[j];//m个约束
+    return b;//返回计算出的上界
+ 
+}
+
+int IF(int i,int j)//用于判断多个约束调节同时成立
+{
+	if(cw[j]+w[j][i]<=c[j]&&j<m)
+	{
+		IF(i,j+1);
+		if(j==(m-1)) return 1;//递归了m次，if语句成功执行了m次，m个约束同时成立
+	}
+	else return 0;
+}
+void scanf()
+{
+	printf("请输入物品个数和约束的属性个数：\n");
+    scanf("%d%d",&n,&m);
+	printf("请输入这%d个物品的价值：\n",n);
+	for(int i=0;i<n;i++)
+		scanf("%lf",&v[i]);
+	printf("请依次输入这%d个物品的%d种属性值：\n",n,m);
+		for(j=0;j<m;j++)
+			for(int k=0;k<n;k++)
+			scanf("%d",&w[j][k]);
+	printf("请输入这%d个属性的限制：\n",m);
+	for(j=0;j<m;j++)
+	scanf("%d",&c[j]);
+}
+void main()
+{ 
+	scanf();
+    getBest(0);
+    printf("最大价值为：%lf\n",bestv);
+}
